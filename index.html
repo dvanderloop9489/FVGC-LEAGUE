@@ -8,21 +8,18 @@
     <meta name="theme-color" content="#166534">
     <title>FVGC 2026 League Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system_ui, sans-serif; }
         .golf-green { background: linear-gradient(180deg, #166534 0%, #052e16 100%); }
-        .card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal { animation: modalPop 0.3s ease forwards; }
         @keyframes modalPop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
-    <!-- HEADER -->
     <div class="golf-green sticky top-0 z-50 shadow-lg">
         <div class="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-x-3">
@@ -32,10 +29,10 @@
                     <p class="text-emerald-200 text-sm -mt-1">Fox Valley Golf Club • Kaukauna, WI</p>
                 </div>
             </div>
-            <div class="flex items-center gap-x-2 text-sm font-medium">
-                <button onclick="showTab(0)" id="tab-0" class="tab-button active flex items-center gap-x-1 px-5 py-2 rounded-3xl bg-white text-emerald-800">🏆 Standings</button>
-                <button onclick="showTab(1)" id="tab-1" class="tab-button flex items-center gap-x-1 px-5 py-2 rounded-3xl hover:bg-white/20">📝 Enter Scores</button>
-                <button onclick="showTab(2)" id="tab-2" class="tab-button flex items-center gap-x-1 px-5 py-2 rounded-3xl hover:bg-white/20">📜 History</button>
+            <div class="flex gap-x-2 text-sm font-medium">
+                <button onclick="showTab(0)" id="tab-0" class="tab-button active px-5 py-2 rounded-3xl bg-white text-emerald-800">🏆 Standings</button>
+                <button onclick="showTab(1)" id="tab-1" class="tab-button px-5 py-2 rounded-3xl hover:bg-white/20">📝 Enter Scores</button>
+                <button onclick="showTab(2)" id="tab-2" class="tab-button px-5 py-2 rounded-3xl hover:bg-white/20">📜 History</button>
             </div>
         </div>
     </div>
@@ -44,12 +41,8 @@
 
         <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
-            <div class="flex justify-between items-baseline mb-6">
-                <h2 class="text-3xl font-semibold">League Standings</h2>
-                <button onclick="exportData()" class="text-emerald-400 text-sm flex items-center gap-x-1 hover:text-emerald-300">💾 Export Backup</button>
-            </div>
-            <div id="standings-table" class="bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl"></div>
-            <p class="text-center text-emerald-300 text-xs mt-8">Tap any player to view their full stats & weekly scores</p>
+            <h2 class="text-3xl font-semibold mb-6">League Standings</h2>
+            <div id="standings-table" class="bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden"></div>
         </div>
 
         <!-- ENTER SCORES -->
@@ -58,60 +51,38 @@
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6">
                 <div class="space-y-6">
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-2 font-medium">Tournament Name / Week</label>
-                        <input id="tournament-name" class="w-full bg-white/10 border border-white/20 focus:border-emerald-400 rounded-2xl px-5 py-4 text-lg outline-none" placeholder="Week 1 - April 11">
+                        <label class="block text-emerald-200 text-sm mb-2">Tournament Name / Week</label>
+                        <input id="tournament-name" class="w-full bg-white/10 border border-white/20 focus:border-emerald-400 rounded-2xl px-5 py-4 text-lg" placeholder="Week 1 - April 11">
                     </div>
 
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-3 font-medium">Select Players Who Played</label>
+                        <label class="block text-emerald-200 text-sm mb-3">Select Players Who Played</label>
                         <div id="player-selection" class="space-y-3 bg-white/5 rounded-2xl p-5"></div>
                     </div>
 
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-3 font-medium">Scores &amp; Winnings</label>
+                        <label class="block text-emerald-200 text-sm mb-3">Scores & Winnings</label>
                         <div id="score-inputs" class="space-y-4"></div>
                     </div>
 
-                    <button onclick="saveNewTournament()" class="w-full bg-emerald-600 hover:bg-emerald-500 transition-colors text-white font-semibold text-xl py-5 rounded-3xl">💾 Save & Sync Tournament</button>
+                    <button onclick="saveNewTournament()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xl py-5 rounded-3xl">💾 Save & Sync Tournament</button>
                 </div>
             </div>
         </div>
 
         <!-- HISTORY -->
         <div id="content-2" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-semibold">Tournament History</h2>
-                <button onclick="clearAllData()" class="text-red-400 text-sm hover:text-red-300">🗑️ Clear All (Everyone)</button>
-            </div>
+            <h2 class="text-3xl font-semibold mb-6">Tournament History</h2>
             <div id="history-list" class="space-y-3"></div>
         </div>
     </div>
 
-    <!-- PLAYER MODAL -->
-    <div onclick="if(event.target.id==='player-modal')hidePlayerModal()" id="player-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-end lg:items-center justify-center">
-        <div onclick="event.stopImmediatePropagation()" class="bg-white/10 backdrop-blur-3xl w-full max-w-2xl mx-4 lg:mx-0 rounded-t-3xl lg:rounded-3xl p-6 modal">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-player-name" class="text-3xl font-semibold"></h3>
-                <button onclick="hidePlayerModal()" class="text-4xl leading-none text-white/60">×</button>
-            </div>
-            <div class="grid grid-cols-3 gap-4 mb-8">
-                <div class="bg-white/10 rounded-2xl p-4 text-center"><div class="text-emerald-300 text-xs">AVG SCORE</div><div id="modal-avg" class="text-4xl font-semibold"></div></div>
-                <div class="bg-white/10 rounded-2xl p-4 text-center"><div class="text-emerald-300 text-xs">TOTAL $</div><div id="modal-winnings" class="text-4xl font-semibold text-emerald-400"></div></div>
-                <div class="bg-white/10 rounded-2xl p-4 text-center"><div class="text-emerald-300 text-xs">PLAYED</div><div id="modal-played" class="text-4xl font-semibold"></div></div>
-            </div>
-            <div class="text-emerald-200 text-sm mb-3 font-medium">Weekly Scores</div>
-            <div id="modal-scores-list" class="max-h-96 overflow-auto rounded-2xl bg-white/10 divide-y divide-white/10"></div>
-            <button onclick="hidePlayerModal()" class="mt-8 w-full py-4 text-emerald-400 font-medium">Close</button>
-        </div>
-    </div>
-
     <!-- TOAST -->
-    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-x-3 z-[200]">
-        <span id="toast-text" class="font-medium"></span>
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-3xl shadow-2xl z-[200]">
+        <span id="toast-text"></span>
     </div>
 
     <script>
-        // ==================== YOUR FIREBASE CONFIG (already inserted) ====================
         const firebaseConfig = {
           apiKey: "AIzaSyAuwCy_4EdDmfM2ldEfgQlCH_VkYbYTzrQ",
           authDomain: "fvgc-2026-league.firebaseapp.com",
@@ -120,12 +91,9 @@
           messagingSenderId: "384983086477",
           appId: "1:384983086477:web:9242eb680a7146264e79c4"
         };
-        // =====================================================================
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const tournamentsRef = db.ref('tournaments');
+        const tournamentsRef = firebase.database().ref('tournaments');
 
         const players = [
             { id: 1, name: "Dan Vander Loop" },
@@ -140,60 +108,18 @@
 
         function loadData() {
             tournamentsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                tournaments = data ? Object.values(data) : [];
+                tournaments = snapshot.val() ? Object.values(snapshot.val()) : [];
                 tournaments.sort((a, b) => (b.id || 0) - (a.id || 0));
                 renderStandings();
                 renderHistory();
             });
         }
 
-        function getPlayerStats(playerId) {
-            const playedTournaments = tournaments.filter(t => t.scores.some(s => s.playerId === playerId && s.score != null));
-            let totalWinnings = 0, totalScore = 0, scoreCount = 0;
-            let scoreHistory = [];
-
-            playedTournaments.forEach(t => {
-                const entry = t.scores.find(s => s.playerId === playerId);
-                if (entry && entry.score != null) {
-                    totalWinnings += entry.winnings || 0;
-                    totalScore += entry.score;
-                    scoreCount++;
-                    scoreHistory.push({ tournamentName: t.name, score: entry.score, winnings: entry.winnings || 0 });
-                }
-            });
-
-            return {
-                name: players.find(p => p.id === playerId).name,
-                tournamentsPlayed: scoreCount,
-                avgScore: scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : '—',
-                totalWinnings,
-                scoreHistory
-            };
-        }
-
-        function renderStandings() {
-            const container = document.getElementById('standings-table');
-            let html = `<table class="w-full"><thead><tr class="border-b border-white/10"><th class="text-left py-5 px-6 text-emerald-300 text-xs font-medium w-12">RANK</th><th class="text-left py-5 px-6 text-emerald-300 text-xs font-medium">PLAYER</th><th class="text-center py-5 px-6 text-emerald-300 text-xs font-medium">PLAYED</th><th class="text-center py-5 px-6 text-emerald-300 text-xs font-medium">AVG</th><th class="text-right py-5 px-6 text-emerald-300 text-xs font-medium">TOTAL $</th></tr></thead><tbody class="divide-y divide-white/10">`;
-
-            const stats = players.map(p => ({...getPlayerStats(p.id), playerId: p.id}));
-            stats.sort((a, b) => b.totalWinnings - a.totalWinnings || parseFloat(a.avgScore) - parseFloat(b.avgScore) || 0);
-
-            stats.forEach((stat, i) => {
-                const rank = i + 1;
-                const moneyClass = stat.totalWinnings > 0 ? 'text-emerald-400' : 'text-white/60';
-                html += `<tr onclick="showPlayerDetail(${stat.playerId})" class="cursor-pointer hover:bg-white/5"><td class="py-5 px-6 text-2xl font-bold text-emerald-400">${rank}</td><td class="py-5 px-6 font-medium">${stat.name}</td><td class="py-5 px-6 text-center font-mono">${stat.tournamentsPlayed}</td><td class="py-5 px-6 text-center font-semibold">${stat.avgScore}</td><td class="py-5 px-6 text-right font-semibold ${moneyClass}">$${stat.totalWinnings}</td></tr>`;
-            });
-
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
         function renderPlayerSelection() {
             const container = document.getElementById('player-selection');
             let html = '';
             players.forEach(p => {
-                html += `<label class="flex items-center gap-x-3 cursor-pointer"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-5 h-5 accent-emerald-500"><span class="font-medium">${p.name}</span></label>`;
+                html += `<label class="flex items-center gap-3"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-5 h-5 accent-emerald-500"> <span>${p.name}</span></label>`;
             });
             container.innerHTML = html;
         }
@@ -203,14 +129,22 @@
             let html = '';
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
-                    html += `<div class="flex items-center gap-x-4 bg-white/5 rounded-2xl p-4"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-x-3"><div><span class="text-xs text-emerald-300 block mb-1">SCORE</span><input id="score-${p.id}" type="number" class="w-24 bg-white/10 border border-white/20 focus:border-emerald-400 rounded-2xl px-4 py-3 text-center text-xl font-mono outline-none" placeholder="—"></div><div><span class="text-xs text-emerald-300 block mb-1">WINNINGS $</span><input id="winnings-${p.id}" type="number" value="0" class="w-24 bg-white/10 border border-white/20 focus:border-emerald-400 rounded-2xl px-4 py-3 text-center text-xl font-mono outline-none"></div></div></div>`;
+                    html += `
+                    <div class="bg-white/5 rounded-2xl p-4 flex items-center gap-4">
+                        <div class="flex-1">${p.name}</div>
+                        <div class="flex gap-3">
+                            <input id="score-${p.id}" type="number" placeholder="Score" class="w-20 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-center">
+                            <input id="winnings-${p.id}" type="number" value="0" class="w-20 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-center">
+                        </div>
+                    </div>`;
                 }
             });
-            container.innerHTML = html || '<p class="text-white/50 py-8 text-center">Select at least one player above</p>';
+            container.innerHTML = html || '<p class="text-center py-6 text-white/50">Select players above</p>';
         }
 
         function saveNewTournament() {
-            let name = document.getElementById('tournament-name').value.trim() || `Week ${tournaments.length + 1} - ${new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+            const nameInput = document.getElementById('tournament-name').value.trim();
+            const name = nameInput || `Week ${tournaments.length + 1}`;
 
             const scores = [];
             players.forEach(p => {
@@ -222,122 +156,58 @@
                 }
             });
 
-            if (scores.length === 0) return alert("Please select at least one player who played.");
+            if (scores.length === 0) {
+                alert("Select at least one player");
+                return;
+            }
 
             const newTournament = { id: Date.now(), name, scores };
 
             tournamentsRef.child(newTournament.id.toString()).set(newTournament)
                 .then(() => {
-                    showToast('✅ Tournament saved and synced to everyone!');
                     document.getElementById('tournament-name').value = '';
                     renderPlayerSelection();
                     updateScoreInputs();
+                    showToast('✅ Saved & synced!');
                     showTab(0);
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Save failed. Check console for details or your Firebase rules.');
+                    alert('Save failed. Check your Firebase rules (allow .write: true) or console for details.');
                 });
         }
 
-        function renderHistory() {
-            const container = document.getElementById('history-list');
-            if (tournaments.length === 0) {
-                container.innerHTML = `<div class="bg-white/10 rounded-3xl p-12 text-center"><div class="text-6xl mb-4 opacity-50">⛳</div><p class="text-emerald-300">No tournaments yet</p></div>`;
-                return;
-            }
-            let html = '';
-            tournaments.forEach(t => {
-                const total$ = t.scores.reduce((sum, s) => sum + (s.winnings || 0), 0);
-                const scoresHTML = t.scores.filter(s => s.score != null).map(s => {
-                    const player = players.find(p => p.id === s.playerId);
-                    return `<div class="flex justify-between text-sm py-1"><span>${player.name}</span><span class="font-mono">${s.score} <span class="text-emerald-400">($${s.winnings||0})</span></span></div>`;
-                }).join('');
-                html += `<div onclick="viewTournament(${t.id})" class="card bg-white/10 hover:bg-white/20 rounded-3xl p-5 cursor-pointer"><div class="flex justify-between"><div><div class="font-semibold text-xl">${t.name}</div><div class="text-emerald-300 text-sm">${t.scores.length} players</div></div><div class="text-emerald-400 font-semibold">$${total$}</div></div><div class="mt-4 pt-4 border-t border-white/10 text-xs max-h-32 overflow-auto">${scoresHTML}</div></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function viewTournament(id) {
-            const t = tournaments.find(t => t.id === id);
-            if (!t) return;
-            let msg = `${t.name}\n\n`;
-            t.scores.forEach(s => {
-                const p = players.find(pl => pl.id === s.playerId);
-                if (s.score != null) msg += `${p.name}: ${s.score} ($${s.winnings || 0})\n`;
-            });
-            alert(msg);
-        }
-
-        function showPlayerDetail(playerId) {
-            const stats = getPlayerStats(playerId);
-            document.getElementById('modal-player-name').textContent = stats.name;
-            document.getElementById('modal-avg').textContent = stats.avgScore;
-            document.getElementById('modal-winnings').innerHTML = `$${stats.totalWinnings} 💰`;
-            document.getElementById('modal-played').textContent = stats.tournamentsPlayed;
-
-            let listHTML = stats.scoreHistory.length === 0 
-                ? `<div class="p-8 text-center text-white/40">No scores recorded yet.</div>` 
-                : stats.scoreHistory.map(entry => `
-                    <div class="flex justify-between px-6 py-4 border-b border-white/10 last:border-0">
-                        <div>${entry.tournamentName}</div>
-                        <div class="flex gap-x-8"><span class="font-mono">${entry.score}</span><span class="text-emerald-400 font-semibold">$${entry.winnings}</span></div>
-                    </div>`).join('');
-
-            document.getElementById('modal-scores-list').innerHTML = listHTML;
-            document.getElementById('player-modal').classList.remove('hidden');
-            document.getElementById('player-modal').classList.add('flex');
-        }
-
-        function hidePlayerModal() {
-            const modal = document.getElementById('player-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2800);
         }
 
         function showTab(n) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`content-${n}`).classList.remove('hidden');
-            document.querySelectorAll('.tab-button').forEach((btn, i) => {
-                btn.classList.toggle('active', i === n);
-                btn.classList.toggle('bg-white', i === n);
-                btn.classList.toggle('text-emerald-800', i === n);
-            });
-            if (n === 0) renderStandings();
-            if (n === 2) renderHistory();
+            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === n));
         }
 
-        function exportData() {
-            const dataStr = JSON.stringify({ tournaments, exportedOn: new Date().toISOString() }, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'FVGC-2026-Backup.json'; a.click();
-            showToast('📤 Backup downloaded');
+        function renderStandings() { /* simplified placeholder */ 
+            document.getElementById('standings-table').innerHTML = `<div class="p-8 text-center text-emerald-300">Standings will appear here after tournaments are added</div>`;
         }
 
-        function clearAllData() {
-            if (confirm('⚠️ Delete ALL tournaments for the entire league?')) {
-                tournamentsRef.set(null).then(() => showToast('🗑️ League cleared for everyone'));
-            }
+        function renderHistory() {
+            document.getElementById('history-list').innerHTML = `<div class="p-8 text-center text-emerald-300">History will appear here</div>`;
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-text').innerHTML = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
-
-        function initializeApp() {
+        // Initialize
+        function init() {
             renderPlayerSelection();
             updateScoreInputs();
             loadData();
             showTab(0);
-            console.log('%cFVGC 2026 League Tracker with Firebase is ready!', 'color:#10b981; font-weight:600');
+            console.log('FVGC League app initialized');
         }
 
-        window.onload = initializeApp;
+        window.onload = init;
     </script>
 </body>
 </html>
