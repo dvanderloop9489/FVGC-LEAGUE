@@ -40,7 +40,7 @@
         <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
             <h2 class="text-3xl font-semibold mb-6">League Standings</h2>
-            <div id="standings-table" class="bg-white/10 rounded-3xl p-6 text-center text-emerald-300">Standings will update after adding tournaments</div>
+            <div id="standings-table" class="bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden"></div>
         </div>
 
         <!-- ENTER SCORES -->
@@ -81,7 +81,6 @@
     </div>
 
     <script>
-        // Your Firebase Config
         const firebaseConfig = {
           apiKey: "AIzaSyAuwCy_4EdDmfM2ldEfgQlCH_VkYbYTzrQ",
           authDomain: "fvgc-2026-league.firebaseapp.com",
@@ -114,6 +113,47 @@
             });
         }
 
+        function getPlayerStats(playerId) {
+            const played = tournaments.filter(t => t.scores.some(s => s.playerId === playerId && s.score != null));
+            let totalWinnings = 0, totalScore = 0, count = 0;
+            let history = [];
+
+            played.forEach(t => {
+                const entry = t.scores.find(s => s.playerId === playerId);
+                if (entry && entry.score != null) {
+                    totalWinnings += entry.winnings || 0;
+                    totalScore += entry.score;
+                    count++;
+                    history.push({name: t.name, score: entry.score, winnings: entry.winnings || 0});
+                }
+            });
+
+            return {
+                name: players.find(p => p.id === playerId).name,
+                played: count,
+                avg: count > 0 ? (totalScore / count).toFixed(1) : '—',
+                winnings: totalWinnings,
+                history
+            };
+        }
+
+        function renderStandings() {
+            const container = document.getElementById('standings-table');
+            let html = `<table class="w-full"><thead><tr class="border-b border-white/10"><th class="py-5 px-6 text-left text-xs text-emerald-300">RANK</th><th class="py-5 px-6 text-left text-xs text-emerald-300">PLAYER</th><th class="py-5 px-6 text-center text-xs text-emerald-300">PLAYED</th><th class="py-5 px-6 text-center text-xs text-emerald-300">AVG</th><th class="py-5 px-6 text-right text-xs text-emerald-300">TOTAL $</th></tr></thead><tbody class="divide-y divide-white/10">`;
+
+            const stats = players.map(p => ({...getPlayerStats(p.id), id: p.id}));
+            stats.sort((a, b) => b.winnings - a.winnings || parseFloat(a.avg) - parseFloat(b.avg));
+
+            stats.forEach((stat, i) => {
+                const rank = i + 1;
+                const moneyClass = stat.winnings > 0 ? 'text-emerald-400' : 'text-white/60';
+                html += `<tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5"><td class="py-5 px-6 text-2xl font-bold text-emerald-400">${rank}</td><td class="py-5 px-6 font-medium">${stat.name}</td><td class="py-5 px-6 text-center">${stat.played}</td><td class="py-5 px-6 text-center font-semibold">${stat.avg}</td><td class="py-5 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td></tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
         function renderPlayerSelection() {
             const container = document.getElementById('player-selection');
             let html = '';
@@ -128,20 +168,14 @@
             let html = '';
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
-                    html += `
-                    <div class="bg-white/5 rounded-2xl p-4 flex gap-4 items-center">
-                        <div class="flex-1">${p.name}</div>
-                        <input id="score-${p.id}" type="number" placeholder="Score" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center">
-                        <input id="winnings-${p.id}" type="number" value="0" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center">
-                    </div>`;
+                    html += `<div class="bg-white/5 rounded-2xl p-4 flex gap-4 items-center"><div class="flex-1">${p.name}</div><input id="score-${p.id}" type="number" placeholder="Score" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center"><input id="winnings-${p.id}" type="number" value="0" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center"></div>`;
                 }
             });
             container.innerHTML = html || '<p class="text-center py-8 text-white/50">Select at least one player</p>';
         }
 
         function saveNewTournament() {
-            let name = document.getElementById('tournament-name').value.trim();
-            if (!name) name = `Week ${tournaments.length + 1}`;
+            let name = document.getElementById('tournament-name').value.trim() || `Week ${tournaments.length + 1}`;
 
             const scores = [];
             players.forEach(p => {
@@ -153,25 +187,33 @@
                 }
             });
 
-            if (scores.length === 0) {
-                alert("Please select at least one player who played.");
-                return;
-            }
+            if (scores.length === 0) return alert("Select at least one player");
 
             const newTournament = { id: Date.now(), name, scores };
 
             tournamentsRef.child(newTournament.id.toString()).set(newTournament)
                 .then(() => {
-                    showToast('✅ Saved & synced to all devices!');
+                    showToast('✅ Saved & synced!');
                     document.getElementById('tournament-name').value = '';
                     renderPlayerSelection();
                     updateScoreInputs();
                     showTab(0);
                 })
-                .catch(err => {
-                    console.error(err);
-                    alert('Failed to save. Make sure your Firebase Rules allow ".write": true');
-                });
+                .catch(err => alert('Save error: ' + err.message));
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (tournaments.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-emerald-300">No tournaments yet</div>`;
+                return;
+            }
+            let html = '';
+            tournaments.forEach(t => {
+                const total = t.scores.reduce((sum, s) => sum + (s.winnings || 0), 0);
+                html += `<div class="bg-white/10 rounded-3xl p-5"><div class="font-semibold">${t.name}</div><div class="text-emerald-400">$${total}</div></div>`;
+            });
+            container.innerHTML = html;
         }
 
         function showToast(msg) {
@@ -184,30 +226,14 @@
         function showTab(n) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`content-${n}`).classList.remove('hidden');
-
-            document.querySelectorAll('.tab-button').forEach((btn, i) => {
-                btn.classList.toggle('active', i === n);
-                btn.classList.toggle('bg-white', i === n);
-                btn.classList.toggle('text-emerald-800', i === n);
-            });
+            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === n));
         }
 
-        function renderStandings() {
-            // Simple placeholder for now
-            document.getElementById('standings-table').innerHTML = `<div class="p-8 text-center">Add your first tournament to see standings</div>`;
-        }
-
-        function renderHistory() {
-            document.getElementById('history-list').innerHTML = `<div class="p-8 text-center text-emerald-300">No tournaments yet</div>`;
-        }
-
-        // Initialize everything
         function initializeApp() {
             renderPlayerSelection();
             updateScoreInputs();
             loadData();
             showTab(0);
-            console.log('%cFVGC 2026 League Tracker loaded', 'color:#10b981');
         }
 
         window.onload = initializeApp;
