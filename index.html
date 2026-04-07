@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#166534">
     <title>FVGC 2026 League Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,23 +13,22 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system_ui, sans-serif; }
         .golf-green { background: linear-gradient(180deg, #166534 0%, #052e16 100%); }
-        .modal { animation: modalPop 0.3s ease forwards; }
-        @keyframes modalPop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
+    <!-- HEADER -->
     <div class="golf-green sticky top-0 z-50 shadow-lg">
         <div class="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-x-3">
                 <span class="text-4xl">⛳</span>
                 <div>
-                    <h1 class="text-2xl font-semibold tracking-tight">FVGC 2026</h1>
-                    <p class="text-emerald-200 text-sm -mt-1">Fox Valley Golf Club • Kaukauna, WI</p>
+                    <h1 class="text-2xl font-semibold">FVGC 2026</h1>
+                    <p class="text-emerald-200 text-sm">Fox Valley Golf Club • Kaukauna, WI</p>
                 </div>
             </div>
-            <div class="flex gap-x-2 text-sm font-medium">
-                <button onclick="showTab(0)" id="tab-0" class="tab-button active px-5 py-2 rounded-3xl bg-white text-emerald-800">🏆 Standings</button>
+            <div class="flex gap-x-2 text-sm">
+                <button onclick="showTab(0)" id="tab-0" class="tab-button active bg-white text-emerald-800 px-5 py-2 rounded-3xl">🏆 Standings</button>
                 <button onclick="showTab(1)" id="tab-1" class="tab-button px-5 py-2 rounded-3xl hover:bg-white/20">📝 Enter Scores</button>
                 <button onclick="showTab(2)" id="tab-2" class="tab-button px-5 py-2 rounded-3xl hover:bg-white/20">📜 History</button>
             </div>
@@ -42,7 +40,7 @@
         <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
             <h2 class="text-3xl font-semibold mb-6">League Standings</h2>
-            <div id="standings-table" class="bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden"></div>
+            <div id="standings-table" class="bg-white/10 rounded-3xl p-6 text-center text-emerald-300">Standings will update after adding tournaments</div>
         </div>
 
         <!-- ENTER SCORES -->
@@ -52,7 +50,7 @@
                 <div class="space-y-6">
                     <div>
                         <label class="block text-emerald-200 text-sm mb-2">Tournament Name / Week</label>
-                        <input id="tournament-name" class="w-full bg-white/10 border border-white/20 focus:border-emerald-400 rounded-2xl px-5 py-4 text-lg" placeholder="Week 1 - April 11">
+                        <input id="tournament-name" class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-lg" placeholder="Week 1 - April 11">
                     </div>
 
                     <div>
@@ -65,7 +63,7 @@
                         <div id="score-inputs" class="space-y-4"></div>
                     </div>
 
-                    <button onclick="saveNewTournament()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xl py-5 rounded-3xl">💾 Save & Sync Tournament</button>
+                    <button onclick="saveNewTournament()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-5 rounded-3xl text-xl">💾 Save & Sync Tournament</button>
                 </div>
             </div>
         </div>
@@ -78,11 +76,12 @@
     </div>
 
     <!-- TOAST -->
-    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-3xl shadow-2xl z-[200]">
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-3xl shadow-2xl z-50">
         <span id="toast-text"></span>
     </div>
 
     <script>
+        // Your Firebase Config
         const firebaseConfig = {
           apiKey: "AIzaSyAuwCy_4EdDmfM2ldEfgQlCH_VkYbYTzrQ",
           authDomain: "fvgc-2026-league.firebaseapp.com",
@@ -119,7 +118,7 @@
             const container = document.getElementById('player-selection');
             let html = '';
             players.forEach(p => {
-                html += `<label class="flex items-center gap-3"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-5 h-5 accent-emerald-500"> <span>${p.name}</span></label>`;
+                html += `<label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-5 h-5 accent-emerald-500"> <span class="font-medium">${p.name}</span></label>`;
             });
             container.innerHTML = html;
         }
@@ -130,26 +129,24 @@
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
                     html += `
-                    <div class="bg-white/5 rounded-2xl p-4 flex items-center gap-4">
+                    <div class="bg-white/5 rounded-2xl p-4 flex gap-4 items-center">
                         <div class="flex-1">${p.name}</div>
-                        <div class="flex gap-3">
-                            <input id="score-${p.id}" type="number" placeholder="Score" class="w-20 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-center">
-                            <input id="winnings-${p.id}" type="number" value="0" class="w-20 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-center">
-                        </div>
+                        <input id="score-${p.id}" type="number" placeholder="Score" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center">
+                        <input id="winnings-${p.id}" type="number" value="0" class="w-24 bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-center">
                     </div>`;
                 }
             });
-            container.innerHTML = html || '<p class="text-center py-6 text-white/50">Select players above</p>';
+            container.innerHTML = html || '<p class="text-center py-8 text-white/50">Select at least one player</p>';
         }
 
         function saveNewTournament() {
-            const nameInput = document.getElementById('tournament-name').value.trim();
-            const name = nameInput || `Week ${tournaments.length + 1}`;
+            let name = document.getElementById('tournament-name').value.trim();
+            if (!name) name = `Week ${tournaments.length + 1}`;
 
             const scores = [];
             players.forEach(p => {
-                const cb = document.getElementById(`check-${p.id}`);
-                if (cb && cb.checked) {
+                const checked = document.getElementById(`check-${p.id}`);
+                if (checked && checked.checked) {
                     const score = parseFloat(document.getElementById(`score-${p.id}`).value) || null;
                     const winnings = parseFloat(document.getElementById(`winnings-${p.id}`).value) || 0;
                     scores.push({ playerId: p.id, score, winnings });
@@ -157,7 +154,7 @@
             });
 
             if (scores.length === 0) {
-                alert("Select at least one player");
+                alert("Please select at least one player who played.");
                 return;
             }
 
@@ -165,15 +162,15 @@
 
             tournamentsRef.child(newTournament.id.toString()).set(newTournament)
                 .then(() => {
+                    showToast('✅ Saved & synced to all devices!');
                     document.getElementById('tournament-name').value = '';
                     renderPlayerSelection();
                     updateScoreInputs();
-                    showToast('✅ Saved & synced!');
                     showTab(0);
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Save failed. Check your Firebase rules (allow .write: true) or console for details.');
+                    alert('Failed to save. Make sure your Firebase Rules allow ".write": true');
                 });
         }
 
@@ -181,33 +178,39 @@
             const toast = document.getElementById('toast');
             document.getElementById('toast-text').textContent = msg;
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2800);
+            setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
         function showTab(n) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`content-${n}`).classList.remove('hidden');
-            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === n));
+
+            document.querySelectorAll('.tab-button').forEach((btn, i) => {
+                btn.classList.toggle('active', i === n);
+                btn.classList.toggle('bg-white', i === n);
+                btn.classList.toggle('text-emerald-800', i === n);
+            });
         }
 
-        function renderStandings() { /* simplified placeholder */ 
-            document.getElementById('standings-table').innerHTML = `<div class="p-8 text-center text-emerald-300">Standings will appear here after tournaments are added</div>`;
+        function renderStandings() {
+            // Simple placeholder for now
+            document.getElementById('standings-table').innerHTML = `<div class="p-8 text-center">Add your first tournament to see standings</div>`;
         }
 
         function renderHistory() {
-            document.getElementById('history-list').innerHTML = `<div class="p-8 text-center text-emerald-300">History will appear here</div>`;
+            document.getElementById('history-list').innerHTML = `<div class="p-8 text-center text-emerald-300">No tournaments yet</div>`;
         }
 
-        // Initialize
-        function init() {
+        // Initialize everything
+        function initializeApp() {
             renderPlayerSelection();
             updateScoreInputs();
             loadData();
             showTab(0);
-            console.log('FVGC League app initialized');
+            console.log('%cFVGC 2026 League Tracker loaded', 'color:#10b981');
         }
 
-        window.onload = init;
+        window.onload = initializeApp;
     </script>
 </body>
 </html>
