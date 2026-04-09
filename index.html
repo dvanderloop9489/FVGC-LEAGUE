@@ -95,6 +95,7 @@
         firebase.initializeApp(firebaseConfig);
         const tournamentsRef = firebase.database().ref('tournaments');
 
+        // First names only as requested
         const players = [
             { id: 1, name: "Dan" },
             { id: 2, name: "Alex" },
@@ -113,6 +114,51 @@
                 renderStandings();
                 renderHistory();
             });
+        }
+
+        function getPlayerStats(playerId) {
+            const played = tournaments.filter(t => t.scores.some(s => s.playerId === playerId && s.score != null));
+            let totalWinnings = 0, totalScore = 0, count = 0;
+
+            played.forEach(t => {
+                const entry = t.scores.find(s => s.playerId === playerId);
+                if (entry && entry.score != null) {
+                    totalWinnings += entry.winnings || 0;
+                    totalScore += entry.score;
+                    count++;
+                }
+            });
+
+            return {
+                name: players.find(p => p.id === playerId).name,
+                played: count,
+                avg: count > 0 ? (totalScore / count).toFixed(1) : '—',
+                winnings: totalWinnings
+            };
+        }
+
+        function renderStandings() {
+            const container = document.getElementById('standings-table');
+            let html = `<table class="w-full"><thead><tr class="border-b border-white/10"><th class="py-6 px-6 text-left text-xs font-medium text-emerald-300">RANK</th><th class="py-6 px-6 text-left text-xs font-medium text-emerald-300">PLAYER</th><th class="py-6 px-6 text-center text-xs font-medium text-emerald-300">ROUNDS</th><th class="py-6 px-6 text-center text-xs font-medium text-emerald-300">AVG</th><th class="py-6 px-6 text-right text-xs font-medium text-emerald-300">TOTAL $</th></tr></thead><tbody class="divide-y divide-white/10">`;
+
+            const stats = players.map(p => ({...getPlayerStats(p.id), id: p.id}));
+            stats.sort((a, b) => b.winnings - a.winnings || parseFloat(a.avg) - parseFloat(b.avg) || 0);
+
+            stats.forEach((stat, i) => {
+                const rank = i + 1;
+                const moneyClass = stat.winnings > 0 ? 'text-amber-400' : 'text-white/70';
+                html += `
+                    <tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5">
+                        <td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td>
+                        <td class="py-6 px-6 font-medium">${stat.name}</td>
+                        <td class="py-6 px-6 text-center font-mono">${stat.played}</td>
+                        <td class="py-6 px-6 text-center font-semibold">${stat.avg}</td>
+                        <td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td>
+                    </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         }
 
         function renderPlayerSelection() {
@@ -159,11 +205,6 @@
                 .catch(err => alert('Save failed'));
         }
 
-        function renderStandings() {
-            // Placeholder for now (you can expand this later)
-            document.getElementById('standings-table').innerHTML = `<div class="p-8 text-center text-emerald-300">Standings update automatically after saving rounds</div>`;
-        }
-
         function renderHistory() {
             const container = document.getElementById('history-list');
             if (tournaments.length === 0) {
@@ -174,7 +215,7 @@
             tournaments.forEach(t => {
                 const total = t.scores.reduce((sum, s) => sum + (s.winnings || 0), 0);
                 html += `
-                <div onclick="showTournamentDetail(${t.id})" class="bg-zinc-900 rounded-3xl p-6 card cursor-pointer hover:bg-zinc-800">
+                <div onclick="showTournamentDetail(${t.id})" class="bg-zinc-900 rounded-3xl p-6 cursor-pointer hover:bg-zinc-800">
                     <div class="font-semibold text-xl">${t.name}</div>
                     <div class="text-emerald-400 text-lg">$${total} total paid out</div>
                 </div>`;
