@@ -15,10 +15,9 @@
         .title-font { font-family: 'Playfair Display', serif; }
         .golf-green { background: linear-gradient(135deg, #166534 0%, #052e16 100%); }
         .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2); }
-        .modal { animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.92) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .rank-badge { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .card:hover { transform: translateY(-4px); }
+        .modal { animation: modalPop 0.4s ease forwards; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
@@ -27,91 +26,65 @@
     <div class="golf-green sticky top-0 z-50 shadow-2xl">
         <div class="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-x-4">
-                <!-- Your logo here -->
-                <img src="https://i.imgur.com/YourLogoURL.png" alt="Keep Golf Real The Fox" class="h-16 w-16 rounded-full shadow-lg border-4 border-white/30">
+                <img src="logo.png" alt="Keep Golf Real The Fox" class="h-16 w-16 rounded-full shadow-lg border-4 border-white/30 object-contain">
                 <div>
                     <h1 class="title-font text-4xl font-bold tracking-tight">FVGC 2026</h1>
                 </div>
             </div>
             <div class="flex bg-white/10 backdrop-blur-md rounded-3xl p-1">
-                <button onclick="showTab(0)" id="tab-0" class="tab-button active px-6 py-3 rounded-3xl text-sm font-semibold flex items-center gap-x-2">🏆 Standings</button>
-                <button onclick="showTab(1)" id="tab-1" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold flex items-center gap-x-2">📝 Enter Round</button>
-                <button onclick="showTab(2)" id="tab-2" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold flex items-center gap-x-2">📜 History</button>
+                <button onclick="showTab(0)" id="tab-0" class="tab-button active px-6 py-3 rounded-3xl text-sm font-semibold">🏆 Standings</button>
+                <button onclick="showTab(1)" id="tab-1" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold">📝 Enter Round</button>
+                <button onclick="showTab(2)" id="tab-2" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold">📜 History</button>
             </div>
         </div>
     </div>
 
     <div class="max-w-2xl mx-auto px-6 pt-8">
 
-        <!-- STANDINGS TAB -->
+        <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-4xl font-semibold title-font tracking-tight">League Standings</h2>
-                <div onclick="exportData()" class="text-emerald-400 hover:text-emerald-300 cursor-pointer text-sm flex items-center gap-x-1">💾 Export</div>
-            </div>
+            <h2 class="text-4xl font-semibold title-font tracking-tight mb-6">League Standings</h2>
             <div id="standings-table" class="bg-zinc-900/70 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/10"></div>
         </div>
 
-        <!-- ENTER SCORES TAB -->
+        <!-- ENTER ROUND -->
         <div id="content-1" class="tab-content hidden">
             <h2 class="text-4xl font-semibold title-font tracking-tight mb-8">Enter New Round</h2>
             <div class="bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-8 border border-white/10">
                 <div class="space-y-8">
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-2 font-medium">ROUND / TOURNAMENT NAME</label>
+                        <label class="block text-emerald-200 text-sm mb-2 font-medium">ROUND NAME</label>
                         <input id="tournament-name" class="w-full bg-zinc-800 border border-white/20 focus:border-emerald-400 rounded-2xl px-6 py-5 text-lg outline-none" placeholder="Week 1 - April 11">
                     </div>
 
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-4 font-medium">PLAYERS WHO PARTICIPATED</label>
+                        <label class="block text-emerald-200 text-sm mb-4 font-medium">PLAYERS WHO PLAYED</label>
                         <div id="player-selection" class="grid grid-cols-1 gap-3"></div>
                     </div>
 
                     <div>
-                        <label class="block text-emerald-200 text-sm mb-4 font-medium">SCORES &amp; WINNINGS</label>
+                        <label class="block text-emerald-200 text-sm mb-4 font-medium">SCORES & WINNINGS</label>
                         <div id="score-inputs" class="space-y-4"></div>
                     </div>
 
-                    <button onclick="saveNewTournament()" 
-                            class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl active:scale-95 transition-all">
-                        💾 Save & Sync Round
-                    </button>
+                    <button onclick="saveNewTournament()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl">💾 Save & Sync Round</button>
                 </div>
             </div>
         </div>
 
-        <!-- HISTORY TAB -->
+        <!-- HISTORY -->
         <div id="content-2" class="tab-content hidden">
             <h2 class="text-4xl font-semibold title-font tracking-tight mb-8">Tournament History</h2>
             <div id="history-list" class="space-y-4"></div>
         </div>
     </div>
 
-    <!-- PLAYER DETAIL MODAL -->
-    <div id="player-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-end lg:items-center justify-center">
-        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 w-full max-w-2xl mx-4 lg:mx-auto rounded-t-3xl lg:rounded-3xl p-8 modal border border-white/10">
-            <div class="flex justify-between items-center mb-8">
-                <h3 id="modal-player-name" class="text-3xl font-semibold"></h3>
-                <button onclick="hidePlayerModal()" class="text-4xl text-white/60 hover:text-white">×</button>
-            </div>
-            <div class="grid grid-cols-3 gap-4 mb-10">
-                <div class="bg-zinc-800 rounded-2xl p-5 text-center"><div class="text-xs text-emerald-300">AVG SCORE</div><div id="modal-avg" class="text-4xl font-semibold mt-1"></div></div>
-                <div class="bg-zinc-800 rounded-2xl p-5 text-center"><div class="text-xs text-emerald-300">TOTAL $</div><div id="modal-winnings" class="text-4xl font-semibold text-emerald-400 mt-1"></div></div>
-                <div class="bg-zinc-800 rounded-2xl p-5 text-center"><div class="text-xs text-emerald-300">ROUNDS</div><div id="modal-played" class="text-4xl font-semibold mt-1"></div></div>
-            </div>
-            <div class="text-emerald-200 text-sm mb-4 font-medium">SCORE HISTORY</div>
-            <div id="modal-scores-list" class="max-h-80 overflow-auto rounded-2xl bg-zinc-800/50 divide-y divide-white/10"></div>
-            <button onclick="hidePlayerModal()" class="mt-10 w-full py-4 text-emerald-400 font-medium">Close</button>
-        </div>
-    </div>
-
     <!-- TOAST -->
-    <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-x-3 z-[200]">
-        <span id="toast-text" class="font-medium"></span>
+    <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-8 py-4 rounded-3xl shadow-2xl z-[200]">
+        <span id="toast-text"></span>
     </div>
 
     <script>
-        // Your Firebase Config (unchanged)
         const firebaseConfig = {
           apiKey: "AIzaSyAuwCy_4EdDmfM2ldEfgQlCH_VkYbYTzrQ",
           authDomain: "fvgc-2026-league.firebaseapp.com",
@@ -178,14 +151,7 @@
             stats.forEach((stat, i) => {
                 const rank = i + 1;
                 const moneyClass = stat.winnings > 0 ? 'text-amber-400' : 'text-white/70';
-                html += `
-                    <tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5 transition-colors">
-                        <td class="py-6 px-6"><span class="rank-badge text-black font-bold text-xl w-9 h-9 inline-flex items-center justify-center rounded-2xl">${rank}</span></td>
-                        <td class="py-6 px-6 font-medium">${stat.name}</td>
-                        <td class="py-6 px-6 text-center font-mono text-lg">${stat.played}</td>
-                        <td class="py-6 px-6 text-center font-semibold text-xl">${stat.avg}</td>
-                        <td class="py-6 px-6 text-right font-semibold text-xl ${moneyClass}">$${stat.winnings}</td>
-                    </tr>`;
+                html += `<tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5"><td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td><td class="py-6 px-6 font-medium">${stat.name}</td><td class="py-6 px-6 text-center font-mono">${stat.played}</td><td class="py-6 px-6 text-center font-semibold">${stat.avg}</td><td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td></tr>`;
             });
 
             html += `</tbody></table>`;
@@ -196,11 +162,7 @@
             const container = document.getElementById('player-selection');
             let html = '';
             players.forEach(p => {
-                html += `
-                <label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer transition-colors">
-                    <input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500">
-                    <span class="font-medium text-lg">${p.name}</span>
-                </label>`;
+                html += `<label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500"><span class="font-medium text-lg">${p.name}</span></label>`;
             });
             container.innerHTML = html;
         }
@@ -210,6 +172,78 @@
             let html = '';
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
-                    html += `
-                    <div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6">
-                       
+                    html += `<div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-4"><input id="score-${p.id}" type="number" placeholder="Score" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"><input id="winnings-${p.id}" type="number" value="0" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"></div></div>`;
+                }
+            });
+            container.innerHTML = html || '<p class="text-center py-12 text-white/50">Select players who played</p>';
+        }
+
+        function saveNewTournament() {
+            let name = document.getElementById('tournament-name').value.trim() || `Round ${tournaments.length + 1}`;
+            const scores = [];
+            players.forEach(p => {
+                const cb = document.getElementById(`check-${p.id}`);
+                if (cb && cb.checked) {
+                    const score = parseFloat(document.getElementById(`score-${p.id}`).value) || null;
+                    const winnings = parseFloat(document.getElementById(`winnings-${p.id}`).value) || 0;
+                    scores.push({ playerId: p.id, score, winnings });
+                }
+            });
+            if (scores.length === 0) return alert("Select at least one player");
+
+            const newTournament = { id: Date.now(), name, scores };
+            tournamentsRef.child(newTournament.id.toString()).set(newTournament)
+                .then(() => {
+                    showToast('✅ Saved & synced!');
+                    document.getElementById('tournament-name').value = '';
+                    renderPlayerSelection();
+                    updateScoreInputs();
+                    showTab(0);
+                })
+                .catch(err => alert('Save failed: ' + err.message));
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (tournaments.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 text-emerald-300">No rounds recorded yet</div>`;
+                return;
+            }
+            let html = '';
+            tournaments.forEach(t => {
+                const total = t.scores.reduce((sum, s) => sum + (s.winnings || 0), 0);
+                html += `<div class="bg-zinc-900 rounded-3xl p-6 card"><div class="font-semibold">${t.name}</div><div class="text-emerald-400">$${total}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function showPlayerDetail(playerId) {
+            // Simple modal for now
+            const stats = getPlayerStats(playerId);
+            alert(`${stats.name}\nAvg: ${stats.avg}\nWinnings: $${stats.winnings}\nRounds: ${stats.played}`);
+        }
+
+        function showTab(n) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${n}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === n));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function initializeApp() {
+            renderPlayerSelection();
+            updateScoreInputs();
+            loadData();
+            showTab(0);
+        }
+
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
