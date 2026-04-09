@@ -15,16 +15,16 @@
         .title-font { font-family: 'Playfair Display', serif; }
         .golf-green { background: linear-gradient(135deg, #166534 0%, #052e16 100%); }
         .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3); }
+        .card:hover { transform: translateY(-4px); }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
-    <!-- HEADER with your logo -->
+    <!-- HEADER -->
     <div class="golf-green sticky top-0 z-50 shadow-2xl">
         <div class="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-x-4">
-                <img src="logo.png" alt="Keep Golf Real The Fox" class="h-16 w-16 rounded-full shadow-lg border-4 border-white/30 object-contain">
+                <img src="logo.png" alt="Keep Golf Real The Fox" class="h-16 w-16 rounded-full shadow-lg border-4 border-white/30">
                 <div>
                     <h1 class="title-font text-4xl font-bold tracking-tight">FVGC 2026</h1>
                 </div>
@@ -65,10 +65,7 @@
                         <div id="score-inputs" class="space-y-4"></div>
                     </div>
 
-                    <button onclick="saveNewTournament()" 
-                            class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl active:scale-95 transition-all">
-                        💾 Save & Sync Round
-                    </button>
+                    <button onclick="saveNewTournament()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl">💾 Save & Sync Round</button>
                 </div>
             </div>
         </div>
@@ -110,7 +107,6 @@
         firebase.initializeApp(firebaseConfig);
         const tournamentsRef = firebase.database().ref('tournaments');
 
-        // First names only
         const players = [
             { id: 1, name: "Dan" },
             { id: 2, name: "Alex" },
@@ -162,25 +158,18 @@
             stats.forEach((stat, i) => {
                 const rank = i + 1;
                 const moneyClass = stat.winnings > 0 ? 'text-amber-400' : 'text-white/70';
-                html += `
-                    <tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5 transition-colors">
-                        <td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td>
-                        <td class="py-6 px-6 font-medium">${stat.name}</td>
-                        <td class="py-6 px-6 text-center font-mono">${stat.played}</td>
-                        <td class="py-6 px-6 text-center font-semibold">${stat.avg}</td>
-                        <td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td>
-                    </tr>`;
+                html += `<tr onclick="alert('Detailed stats coming soon for ${stat.name}')" class="cursor-pointer hover:bg-white/5"><td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td><td class="py-6 px-6 font-medium">${stat.name}</td><td class="py-6 px-6 text-center font-mono">${stat.played}</td><td class="py-6 px-6 text-center font-semibold">${stat.avg}</td><td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td></tr>`;
             });
 
             html += `</tbody></table>`;
-            container.innerHTML = html || `<div class="p-12 text-center text-emerald-300">Add your first round to see standings</div>`;
+            container.innerHTML = html;
         }
 
         function renderPlayerSelection() {
             const container = document.getElementById('player-selection');
             let html = '';
             players.forEach(p => {
-                html += `<label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer transition-colors"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500"><span class="font-medium text-lg">${p.name}</span></label>`;
+                html += `<label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500"><span class="font-medium text-lg">${p.name}</span></label>`;
             });
             container.innerHTML = html;
         }
@@ -190,7 +179,7 @@
             let html = '';
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
-                    html += `<div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-4"><input id="score-${p.id}" type="number" placeholder="Score" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl font-mono outline-none focus:border-emerald-400"><input id="winnings-${p.id}" type="number" value="0" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl font-mono outline-none focus:border-emerald-400"></div></div>`;
+                    html += `<div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-4"><input id="score-${p.id}" type="number" placeholder="Score" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"><input id="winnings-${p.id}" type="number" value="0" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"></div></div>`;
                 }
             });
             container.innerHTML = html || '<p class="text-center py-12 text-white/50">Select players who played this round</p>';
@@ -211,13 +200,72 @@
             const newTournament = { id: Date.now(), name, scores };
             tournamentsRef.child(newTournament.id.toString()).set(newTournament)
                 .then(() => {
-                    showToast('✅ Round saved and synced to the league!');
+                    showToast('✅ Round saved and synced!');
                     document.getElementById('tournament-name').value = '';
                     renderPlayerSelection();
                     updateScoreInputs();
                     showTab(0);
                 })
-                .catch(err => alert('Save failed: ' + err.message));
+                .catch(err => alert('Save failed'));
         }
 
-        function renderHistory()
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (tournaments.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 text-emerald-300">No rounds recorded yet</div>`;
+                return;
+            }
+            let html = '';
+            tournaments.forEach(t => {
+                const total = t.scores.reduce((sum, s) => sum + (s.winnings || 0), 0);
+                html += `<div onclick="showTournamentDetail(${t.id})" class="bg-zinc-900 rounded-3xl p-6 card cursor-pointer hover:bg-zinc-800"><div class="font-semibold text-xl">${t.name}</div><div class="text-emerald-400 text-lg">$${total} total paid out</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function showTournamentDetail(id) {
+            const t = tournaments.find(t => t.id === id);
+            if (!t) return;
+            document.getElementById('modal-tournament-name').textContent = t.name;
+            let detailsHTML = '';
+            t.scores.forEach(s => {
+                const player = players.find(p => p.id === s.playerId);
+                if (player && s.score != null) {
+                    detailsHTML += `<div class="flex justify-between bg-zinc-800 px-6 py-4 rounded-2xl"><span>${player.name}</span><span class="font-mono">${s.score} <span class="text-emerald-400">($${s.winnings || 0})</span></span></div>`;
+                }
+            });
+            document.getElementById('modal-tournament-details').innerHTML = detailsHTML || '<p class="text-white/50 p-6">No scores recorded</p>';
+            document.getElementById('tournament-modal').classList.remove('hidden');
+            document.getElementById('tournament-modal').classList.add('flex');
+        }
+
+        function hideTournamentModal() {
+            const modal = document.getElementById('tournament-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function showTab(n) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${n}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === n));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function initializeApp() {
+            renderPlayerSelection();
+            updateScoreInputs();
+            loadData();
+            showTab(0);
+        }
+
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
