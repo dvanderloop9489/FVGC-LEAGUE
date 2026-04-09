@@ -20,20 +20,10 @@
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
-    <!-- HEADER -->
+    <!-- HEADER - Logo only (cleaner on mobile) -->
     <div class="golf-green sticky top-0 z-50 shadow-2xl">
-        <div class="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
-            <div class="flex items-center gap-x-4">
-                <img src="logo.png" alt="Keep Golf Real The Fox" class="h-16 w-16 rounded-full shadow-lg border-4 border-white/30">
-                <div>
-                    <h1 class="title-font text-4xl font-bold tracking-tight">FVGC 2026</h1>
-                </div>
-            </div>
-            <div class="flex bg-white/10 backdrop-blur-md rounded-3xl p-1">
-                <button onclick="showTab(0)" id="tab-0" class="tab-button active px-6 py-3 rounded-3xl text-sm font-semibold">🏆 Standings</button>
-                <button onclick="showTab(1)" id="tab-1" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold">📝 Enter Round</button>
-                <button onclick="showTab(2)" id="tab-2" class="tab-button px-6 py-3 rounded-3xl text-sm font-semibold">📜 History</button>
-            </div>
+        <div class="max-w-2xl mx-auto px-6 py-5 flex items-center justify-center">
+            <img src="logo.png" alt="Keep Golf Real The Fox" class="h-20 w-20 rounded-full shadow-lg border-4 border-white/30">
         </div>
     </div>
 
@@ -41,13 +31,13 @@
 
         <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
-            <h2 class="text-4xl font-semibold title-font tracking-tight mb-6">League Standings</h2>
+            <h2 class="text-4xl font-semibold title-font tracking-tight mb-6 text-center">League Standings</h2>
             <div id="standings-table" class="bg-zinc-900/70 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/10"></div>
         </div>
 
         <!-- ENTER ROUND -->
         <div id="content-1" class="tab-content hidden">
-            <h2 class="text-4xl font-semibold title-font tracking-tight mb-8">Enter New Round</h2>
+            <h2 class="text-4xl font-semibold title-font tracking-tight mb-8 text-center">Enter New Round</h2>
             <div class="bg-zinc-900/70 backdrop-blur-xl rounded-3xl p-8 border border-white/10">
                 <div class="space-y-8">
                     <div>
@@ -65,14 +55,17 @@
                         <div id="score-inputs" class="space-y-4"></div>
                     </div>
 
-                    <button onclick="saveNewTournament()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl">💾 Save & Sync Round</button>
+                    <button onclick="saveNewTournament()" 
+                            class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 py-6 rounded-3xl text-xl font-semibold shadow-xl">
+                        💾 Save & Sync Round
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- HISTORY -->
         <div id="content-2" class="tab-content hidden">
-            <h2 class="text-4xl font-semibold title-font tracking-tight mb-8">Tournament History</h2>
+            <h2 class="text-4xl font-semibold title-font tracking-tight mb-8 text-center">Tournament History</h2>
             <div id="history-list" class="space-y-4"></div>
         </div>
     </div>
@@ -158,18 +151,25 @@
             stats.forEach((stat, i) => {
                 const rank = i + 1;
                 const moneyClass = stat.winnings > 0 ? 'text-amber-400' : 'text-white/70';
-                html += `<tr onclick="alert('Detailed stats coming soon for ${stat.name}')" class="cursor-pointer hover:bg-white/5"><td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td><td class="py-6 px-6 font-medium">${stat.name}</td><td class="py-6 px-6 text-center font-mono">${stat.played}</td><td class="py-6 px-6 text-center font-semibold">${stat.avg}</td><td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td></tr>`;
+                html += `
+                    <tr onclick="showPlayerDetail(${stat.id})" class="cursor-pointer hover:bg-white/5 transition-colors">
+                        <td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td>
+                        <td class="py-6 px-6 font-medium">${stat.name}</td>
+                        <td class="py-6 px-6 text-center font-mono">${stat.played}</td>
+                        <td class="py-6 px-6 text-center font-semibold">${stat.avg}</td>
+                        <td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td>
+                    </tr>`;
             });
 
             html += `</tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = html || `<div class="p-12 text-center text-emerald-300">Add your first round to see standings</div>`;
         }
 
         function renderPlayerSelection() {
             const container = document.getElementById('player-selection');
             let html = '';
             players.forEach(p => {
-                html += `<label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500"><span class="font-medium text-lg">${p.name}</span></label>`;
+                html += `<label class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 p-5 rounded-3xl cursor-pointer transition-colors"><input type="checkbox" id="check-${p.id}" checked onchange="updateScoreInputs()" class="w-6 h-6 accent-emerald-500"><span class="font-medium text-lg">${p.name}</span></label>`;
             });
             container.innerHTML = html;
         }
@@ -179,7 +179,7 @@
             let html = '';
             players.forEach(p => {
                 if (document.getElementById(`check-${p.id}`).checked) {
-                    html += `<div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-4"><input id="score-${p.id}" type="number" placeholder="Score" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"><input id="winnings-${p.id}" type="number" value="0" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl"></div></div>`;
+                    html += `<div class="bg-zinc-800 rounded-3xl p-6 flex items-center gap-6"><div class="flex-1 font-medium">${p.name}</div><div class="flex gap-4"><input id="score-${p.id}" type="number" placeholder="Score" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl font-mono"><input id="winnings-${p.id}" type="number" value="0" class="w-28 bg-zinc-900 border border-white/20 rounded-2xl px-5 py-4 text-center text-2xl font-mono"></div></div>`;
                 }
             });
             container.innerHTML = html || '<p class="text-center py-12 text-white/50">Select players who played this round</p>';
