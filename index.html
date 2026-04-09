@@ -13,6 +13,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', system_ui, sans-serif; }
         .golf-green { background: linear-gradient(135deg, #166534 0%, #052e16 100%); }
+        .standings-table td, .standings-table th { padding: 14px 8px !important; }
+        .rank-badge { width: 28px; height: 28px; font-size: 15px; }
+        @media (max-width: 480px) {
+            .standings-table th, .standings-table td { font-size: 13px; }
+            .player-name { font-size: 15px; }
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
@@ -24,25 +30,25 @@
         </div>
     </div>
 
-    <div class="max-w-2xl mx-auto px-6 pt-6">
+    <div class="max-w-2xl mx-auto px-4 pt-6">
 
         <!-- TABS -->
         <div class="flex bg-white/10 backdrop-blur-md rounded-3xl p-1 mb-8 mx-auto w-fit">
-            <button onclick="showTab(0)" id="tab-0" class="tab-button active px-8 py-3 rounded-3xl text-sm font-semibold">🏆 Standings</button>
-            <button onclick="showTab(1)" id="tab-1" class="tab-button px-8 py-3 rounded-3xl text-sm font-semibold">📝 Enter Round</button>
-            <button onclick="showTab(2)" id="tab-2" class="tab-button px-8 py-3 rounded-3xl text-sm font-semibold">📜 History</button>
+            <button onclick="showTab(0)" id="tab-0" class="tab-button active px-7 py-3 rounded-3xl text-sm font-semibold">🏆 Standings</button>
+            <button onclick="showTab(1)" id="tab-1" class="tab-button px-7 py-3 rounded-3xl text-sm font-semibold">📝 Enter Round</button>
+            <button onclick="showTab(2)" id="tab-2" class="tab-button px-7 py-3 rounded-3xl text-sm font-semibold">📜 History</button>
         </div>
 
         <!-- STANDINGS -->
         <div id="content-0" class="tab-content">
             <h2 class="text-3xl font-semibold mb-6 text-center">League Standings</h2>
-            <div id="standings-table" class="bg-zinc-900 rounded-3xl overflow-hidden"></div>
+            <div id="standings-table" class="bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 standings-table"></div>
         </div>
 
         <!-- ENTER ROUND -->
         <div id="content-1" class="tab-content hidden">
             <h2 class="text-3xl font-semibold mb-6 text-center">Enter New Round</h2>
-            <div class="bg-zinc-900 rounded-3xl p-8">
+            <div class="bg-zinc-900 rounded-3xl p-6">
                 <div class="space-y-6">
                     <input id="tournament-name" class="w-full bg-zinc-800 border border-white/20 rounded-2xl px-6 py-4 text-lg" placeholder="Week 1 - April 11">
 
@@ -141,7 +147,7 @@
 
         function renderStandings() {
             const container = document.getElementById('standings-table');
-            let html = `<table class="w-full"><thead><tr class="border-b border-white/10"><th class="py-6 px-6 text-left text-xs font-medium text-emerald-300">RANK</th><th class="py-6 px-6 text-left text-xs font-medium text-emerald-300">PLAYER</th><th class="py-6 px-6 text-center text-xs font-medium text-emerald-300">ROUNDS</th><th class="py-6 px-6 text-center text-xs font-medium text-emerald-300">AVG</th><th class="py-6 px-6 text-right text-xs font-medium text-emerald-300">TOTAL $</th></tr></thead><tbody class="divide-y divide-white/10">`;
+            let html = `<table class="w-full text-sm"><thead><tr class="border-b border-white/10"><th class="py-4 px-3 text-left text-xs font-medium text-emerald-300 w-10">RANK</th><th class="py-4 px-3 text-left text-xs font-medium text-emerald-300">PLAYER</th><th class="py-4 px-2 text-center text-xs font-medium text-emerald-300 w-14">ROUNDS</th><th class="py-4 px-2 text-center text-xs font-medium text-emerald-300 w-14">AVG</th><th class="py-4 px-3 text-right text-xs font-medium text-emerald-300">TOTAL $</th></tr></thead><tbody class="divide-y divide-white/10">`;
 
             const stats = players.map(p => ({...getPlayerStats(p.id), id: p.id}));
             stats.sort((a, b) => b.winnings - a.winnings || parseFloat(a.avg) - parseFloat(b.avg) || 0);
@@ -149,11 +155,18 @@
             stats.forEach((stat, i) => {
                 const rank = i + 1;
                 const moneyClass = stat.winnings > 0 ? 'text-amber-400' : 'text-white/70';
-                html += `<tr class="hover:bg-white/5"><td class="py-6 px-6"><span class="inline-flex items-center justify-center w-9 h-9 bg-amber-400 text-black font-bold rounded-2xl text-xl">${rank}</span></td><td class="py-6 px-6 font-medium">${stat.name}</td><td class="py-6 px-6 text-center font-mono">${stat.played}</td><td class="py-6 px-6 text-center font-semibold">${stat.avg}</td><td class="py-6 px-6 text-right font-semibold ${moneyClass}">$${stat.winnings}</td></tr>`;
+                html += `
+                    <tr class="hover:bg-white/5">
+                        <td class="py-4 px-3"><span class="rank-badge inline-flex items-center justify-center bg-amber-400 text-black font-bold rounded-xl">${rank}</span></td>
+                        <td class="py-4 px-3 font-medium player-name">${stat.name}</td>
+                        <td class="py-4 px-2 text-center font-mono">${stat.played}</td>
+                        <td class="py-4 px-2 text-center font-semibold">${stat.avg}</td>
+                        <td class="py-4 px-3 text-right font-semibold ${moneyClass}">$${stat.winnings}</td>
+                    </tr>`;
             });
 
             html += `</tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = html || `<div class="p-12 text-center text-emerald-300">Add your first round to see standings</div>`;
         }
 
         function renderPlayerSelection() {
